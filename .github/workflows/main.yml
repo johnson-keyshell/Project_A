@@ -1,41 +1,48 @@
-name: React Frontend Build
+name: Build React App
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    # Cache node_modules for faster builds
+    - name: Cache Node.js modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
+    # Set up Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      # Step 4: Build the project
-      - name: Build project
-        run: npm run build
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
+    # Install dependencies
+    - name: Install dependencies
+      run: npm install
 
-      # Step 5: Upload the build artifact
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: build/
+    # Build the React app
+    - name: Build the React app
+      run: npm run build
+
+    # Upload build artifacts for later steps or testing
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: build/
